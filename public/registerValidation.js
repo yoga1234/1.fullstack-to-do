@@ -107,7 +107,7 @@ document.getElementById('register-form').addEventListener("submit", (e) => {
     submitProcess("field-empty")
   } else if (registerUsername.value.length < 8) {
     submitProcess("user-min")
-  } else if (registerPassword.value.length < 12) {
+  } else if (registerPassword.value.length < 8) {
     submitProcess("pass-min")
   } else {
     axios.post('/register', { username: e.target.username.value, password: e.target.password.value })

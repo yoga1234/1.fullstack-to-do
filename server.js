@@ -4,6 +4,9 @@ const mongodb = require('mongodb')
 const bodyParser = require('body-parser')
 const PORT = 3000
 
+// using register controller
+const registerController = require('./controllers/registerController')
+
 let db // cast db variable for database
 
 // assign express method in app
