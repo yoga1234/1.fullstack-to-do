@@ -57,12 +57,14 @@ app.get('/login', (req, res) => {
 app.post('/', (req, res) => {
   db.collection('login').findOne({ "name": req.body.username })
     .then((result) => {
-      if (result) {
-        res.cookie('nameTodo', result.name, { httpOnly: false })
-        res.render('home', { name: result.name })
+      if (result && result.password == req.body.password) {
+        // console.log(req.body)
+        // res.cookie('nameTodo', result.name, { httpOnly: false })
+        // res.render('home', { name: result.name })
+        res.send("Success")
       } else {
-        res.send("Data tidak ada")
-        console.log("Data tidak ditemukan")
+        res.send("Error")
+        console.log(req.body)
       }
     })
     .catch(err => console.error(err))
