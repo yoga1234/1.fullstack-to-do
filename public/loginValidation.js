@@ -22,6 +22,7 @@ document.getElementById("login-submit").addEventListener("submit", (e) => {
     axios.post('/', { username: e.target.username.value, password: e.target.password.value })
       .then((res) => {
         if (res.data == "Success") {
+          // if data found send data like a normal form
           console.log("Data found!")
         } else {
           console.log("Data not found!")
