@@ -1,11 +1,9 @@
 // load the things we need
 const express = require('express')
+const cookieParser = require('cookie-parser')
 const mongodb = require('mongodb')
 const bodyParser = require('body-parser')
 const PORT = 3000
-
-// using register controller
-const registerController = require('./controllers/registerController')
 
 let db // cast db variable for database
 
@@ -43,6 +41,9 @@ app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
+// use cookie parser for getting cookie
+app.use(cookieParser("secret", { httpOnly: false }))
+
 // setting up for homepage
 app.get('/', (req, res) => {
   res.render('home')
@@ -53,10 +54,24 @@ app.get('/login', (req, res) => {
   res.render('login')
 })
 
-// setting up for login page
-app.post('/login', (req, res) => {
-  res.send("You are clicking on login button")
-  console.log(req.body.username)
+app.post('/', (req, res) => {
+  db.collection('login').findOne({ "name": req.body.username })
+    .then((result) => {
+      if (result) {
+        res.cookie('nameTodo', result.name, { httpOnly: false })
+        res.render('home', { name: result.name })
+      } else {
+        res.send("Data tidak ada")
+        console.log("Data tidak ditemukan")
+      }
+    })
+    .catch(err => console.error(err))
+})
+
+// setting up logout for user
+app.get('/logout', (req, res) => {
+  res.clearCookie('nameTodo')
+  res.redirect('/login')
 })
 
 // setting up for register page
