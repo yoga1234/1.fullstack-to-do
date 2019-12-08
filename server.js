@@ -4,11 +4,22 @@ const cookieParser = require('cookie-parser')
 const mongodb = require('mongodb')
 const bodyParser = require('body-parser')
 const PORT = 3000
+const session = require('express-session')
+const path = require('path')
 
 let db // cast db variable for database
 
+let sess // create global variable for session
+
 // assign express method in app
 let app = express()
+
+// use express
+app.use(session({
+  'secret': 'secret',
+  resave: false,
+  saveUninitialized: false
+}))
 
 // make a static folder with express
 app.use(express.static('public'))
@@ -36,6 +47,7 @@ mongodb.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: t
 
 // set the view engine to ejs
 app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
 
 // setting the body parser for form
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -46,7 +58,27 @@ app.use(cookieParser("secret", { httpOnly: false }))
 
 // setting up for homepage
 app.get('/', (req, res) => {
-  res.render('home')
+  if (sess) {
+    res.render('home')
+  } else {
+    res.redirect('login')
+    console.log(sess)
+  }
+})
+
+app.post('/', (req, res) => {
+  sess = req.session
+  db.collection('login').findOne({ "name": req.body.username })
+    .then((result) => {
+      if (result && result.password == req.body.password) {
+        sess.username = result.username
+        res.render('home')
+      } else {
+        res.send("Error: Data not found")
+        console.log(req.body)
+      }
+    })
+    .catch(err => console.error(err))
 })
 
 // setting up if user input form
@@ -54,26 +86,10 @@ app.get('/login', (req, res) => {
   res.render('login')
 })
 
-app.post('/', (req, res) => {
-  db.collection('login').findOne({ "name": req.body.username })
-    .then((result) => {
-      if (result && result.password == req.body.password) {
-        // console.log(req.body)
-        // res.cookie('nameTodo', result.name, { httpOnly: false })
-        // res.render('home', { name: result.name })
-        res.send("Success")
-      } else {
-        res.send("Error")
-        console.log(req.body)
-      }
-    })
-    .catch(err => console.error(err))
-})
-
 // setting up logout for user
 app.get('/logout', (req, res) => {
-  res.clearCookie('nameTodo')
-  res.redirect('/login')
+  sess = undefined
+  res.redirect('/')
 })
 
 // setting up for register page
